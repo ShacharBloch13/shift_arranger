@@ -1,0 +1,3 @@
+*.csv
+*.xlsx
+.pytest_cache
