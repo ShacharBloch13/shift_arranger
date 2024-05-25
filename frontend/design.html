@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Availability</title>
+    <script>
+        async function submitAvailability() {
+            let availabilities = [];
+            document.querySelectorAll('.availability').forEach((checkbox) => {
+                let [worker, day, shift] = checkbox.id.split('_');
+                availabilities.push({
+                    worker: worker,
+                    day: day,
+                    shift: shift,
+                    available: checkbox.checked
+                });
+            });
+            let response = await fetch('/set_availability', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(availabilities)
+            });
+            let result = await response.json();
+            alert(result.status);
+        }
+
+        async function getAssignments() {
+            let response = await fetch('/assign_shifts');
+            let result = await response.json();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
+
+                let assignmentsTable = '<table border="1"><thead><tr><th>Shift/Day</th>';
+                days.forEach(day => {
+                    assignmentsTable += `<th>${day}</th>`;
+                });
+                assignmentsTable += '</tr></thead><tbody>';
+
+                shifts.forEach(shift => {
+                    assignmentsTable += `<tr><td>${shift}</td>`;
+                    days.forEach(day => {
+                        let worker = result.assignments[`${day} ${shift}`] || '';
+                        assignmentsTable += `<td>${worker}</td>`;
+                    });
+                    assignmentsTable += '</tr>';
+                });
+                assignmentsTable += '</tbody></table>';
+
+                document.getElementById('assignments').innerHTML = assignmentsTable;
+                document.getElementById('score').innerText = 'Score: ' + result.score;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Shift Availability</h1>
+    <form onsubmit="event.preventDefault(); submitAvailability();">
+        <script>
+            const workers = ["Worker1", "Worker2", "Worker3", "Worker4", "Worker5", "Worker6", "Worker7"];
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
+            
+            workers.forEach(worker => {
+                document.write(`<h2>${worker}</h2>`);
+                document.write('<table border="1"><thead><tr><th>Shift/Day</th>');
+                days.forEach(day => {
+                    document.write(`<th>${day}</th>`);
+                });
+                document.write('</tr></thead><tbody>');
+                shifts.forEach(shift => {
+                    document.write(`<tr><td>${shift}</td>`);
+                    days.forEach(day => {
+                        document.write(`<td><input type="checkbox" id="${worker}_${day}_${shift}" class="availability"></td>`);
+                    });
+                    document.write('</tr>');
+                });
+                document.write('</tbody></table>');
+            });
+        </script>
+        <button type="submit">Submit Availability</button>
+    </form>
+    <button onclick="getAssignments()">Get Assignments</button>
+    <h2>Assignments</h2>
+    <div id="assignments"></div>
+    <p id="score"></p>
+</body>
+</html>
