@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shift Availability</title>
+    <link rel="stylesheet" href="/static/styles.css">
     <script>
         async function submitAvailability() {
             let availabilities = [];
@@ -46,7 +47,11 @@
                     assignmentsTable += `<tr><td>${shift}</td>`;
                     days.forEach(day => {
                         let worker = result.assignments[`${day} ${shift}`] || '';
-                        assignmentsTable += `<td>${worker}</td>`;
+                        if (worker) {
+                            assignmentsTable += `<td class="assignment-cell"><span class="${worker.toLowerCase()}">${worker}</span></td>`;
+                        } else {
+                            assignmentsTable += `<td class="assignment-cell"></td>`;
+                        }
                     });
                     assignmentsTable += '</tr>';
                 });
@@ -67,7 +72,7 @@
             const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
             
             workers.forEach(worker => {
-                document.write(`<h2>${worker}</h2>`);
+                document.write(`<h2 class="worker-title ${worker.toLowerCase()}">${worker}</h2>`);
                 document.write('<table border="1"><thead><tr><th>Shift/Day</th>');
                 days.forEach(day => {
                     document.write(`<th>${day}</th>`);

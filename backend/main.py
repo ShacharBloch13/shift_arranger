@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List
 from logic_flow import generate_and_evaluate_assignments, fitness, all_workers_submitted, add_availability
 import uvicorn
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
@@ -22,6 +23,7 @@ class Availability(BaseModel):
     shift: str
     available: bool
 
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 templates = Jinja2Templates(directory="../frontend")
 
 @app.post("/set_availability")

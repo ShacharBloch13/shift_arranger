@@ -1,0 +1,55 @@
+body {
+    background-color: hsl(6, 21%, 36%);
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+h1, h2 {
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    border: 1px solid white;
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background-color: #1DB954;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    background-color: red;
+    border: 1px solid white;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: green;
+}
+
+.worker-title {
+    color: white;
+}
+
+.worker1 { color: #FF6347; }  /* Tomato */
+.worker2 { color: #4682B4; }  /* SteelBlue */
+.worker3 { color: #9ACD32; }  /* YellowGreen */
+.worker4 { color: #FF69B4; }  /* HotPink */
+.worker5 { color: #8A2BE2; }  /* BlueViolet */
+.worker6 { color: #FFD700; }  /* Gold */
+.worker7 { color: #DC143C; }  /* Crimson */
+
+.assignment-cell {
+    color: black;
+    background-color: white;
+}
