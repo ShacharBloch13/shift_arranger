@@ -71,14 +71,22 @@ The logic_flow.py file contains the core algorithm for generating and evaluating
 # Algorithm Details
 
 1. constraints:
+
    1.1. Maximum of 1 night shift per worker per week.
+   
    1.2. Minimum of 2 shifts and maximum of 3 shifts per worker per week.
+   
 2. Fitness Evaluation:
+   
    2.1. Starts with a perfect score of 100.
+   
    2.2. Deducts points for consecutive shifts and other violations.
+   
    2.3. Ensures a balanced and fair distribution of shifts.
 3. Assignment Generation:
+   
    3.1. Randomly assigns workers to shifts based on availability.
+   
    3.2. Ensures constraints are met and the solution is optimized for fairness.
 
 # Conributing
