@@ -9,12 +9,11 @@ NUM_ASSIGNMENTS = 50000
 # Define shifts and days
 shifts = ['07:00-15:00', '15:00-23:00', '23:00-07:00']
 days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday','Friday','Saturday']
-#days = ['Sunday', 'Monday', 'Tuesday']
 
 # List of all worker names
 required_workers = ["Worker1", "Worker2", "Worker3", "Worker4", "Worker5","Worker6","Worker7"]
-#required_workers = ["Worker1", "Worker2", "Worker3"]
 worker_availability = {worker: {day: {shift: False for shift in shifts} for day in days} for worker in required_workers}
+
 
 # Availability setup for 7 days with 3 shifts per day for debugging
 # worker_availability = {
@@ -83,17 +82,24 @@ worker_availability = {worker: {day: {shift: False for shift in shifts} for day 
 #     }
 # }
 
-def add_availability(worker, day, shift):
+
+def add_availability(worker, day, shift, available):
     if worker in worker_availability:
-        worker_availability[worker][day][shift] = True
+        worker_availability[worker][day][shift] = available  # Respect the passed value
     else:
         print(f"Worker {worker} is not in the list of required workers.")
 
+
 def all_workers_submitted():
-    for worker in required_workers:
-        if worker not in worker_availability:
-            return False
-    return True
+    workers_with_no_availability = []
+
+    for worker, days in worker_availability.items():
+        all_false = all(not any(shifts.values()) for shifts in days.values())
+        if all_false:
+            workers_with_no_availability.append(worker)
+
+    return True if not workers_with_no_availability else workers_with_no_availability
+
 
 def generate_valid_assignment():
     individual = {}
@@ -193,7 +199,10 @@ def main():
         else:
             print("No valid assignments found.")
     else:
-        print("Not all workers have submitted their availability.")
+        notSubmitted = ', '.join(all_workers_submitted())  # Join names into a single string
+        print(f"These workers didn't submit shifts: {notSubmitted}.")
+
+        
 
 if __name__ == "__main__":
     main()
