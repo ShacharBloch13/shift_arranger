@@ -6,61 +6,65 @@
     <title>Shift Availability</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script>
-        async function submitAvailability() {
-            let availabilities = [];
-            document.querySelectorAll('.availability').forEach((checkbox) => {
-                let [worker, day, shift] = checkbox.id.split('_');
-                availabilities.push({
-                    worker: worker,
-                    day: day,
-                    shift: shift,
-                    available: checkbox.checked
-                });
+async function submitAvailability() {
+    let availabilities = [];
+    document.querySelectorAll('.availability').forEach((checkbox) => {
+        let [worker, day, shift] = checkbox.id.split('_');
+        availabilities.push({
+            worker: worker,
+            day: day,
+            shift: shift,
+            available: checkbox.checked
+        });
+    });
+    let response = await fetch('/availability', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(availabilities)
+    });
+    let result = await response.json();
+    if (result.error) {
+        alert(result.error);
+    } else {
+        alert(result.status);
+    }
+}
+
+async function getAssignments() {
+    let response = await fetch('/assignments');
+    let result = await response.json();
+    if (result.error) {
+        alert(result.error);
+    } else {
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
+
+        let assignmentsTable = '<table border="1"><thead><tr><th>Shift/Day</th>';
+        days.forEach(day => {
+            assignmentsTable += `<th>${day}</th>`;
+        });
+        assignmentsTable += '</tr></thead><tbody>';
+
+        shifts.forEach(shift => {
+            assignmentsTable += `<tr><td>${shift}</td>`;
+            days.forEach(day => {
+                let worker = result.assignments[`${day} ${shift}`] || '';
+                if (worker) {
+                    assignmentsTable += `<td class="assignment-cell"><span class="${worker.toLowerCase()}">${worker}</span></td>`;
+                } else {
+                    assignmentsTable += `<td class="assignment-cell"></td>`;
+                }
             });
-            let response = await fetch('/set_availability', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(availabilities)
-            });
-            let result = await response.json();
-            alert(result.status);
-        }
+            assignmentsTable += '</tr>';
+        });
+        assignmentsTable += '</tbody></table>';
 
-        async function getAssignments() {
-            let response = await fetch('/assign_shifts');
-            let result = await response.json();
-            if (result.error) {
-                alert(result.error);
-            } else {
-                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
-
-                let assignmentsTable = '<table border="1"><thead><tr><th>Shift/Day</th>';
-                days.forEach(day => {
-                    assignmentsTable += `<th>${day}</th>`;
-                });
-                assignmentsTable += '</tr></thead><tbody>';
-
-                shifts.forEach(shift => {
-                    assignmentsTable += `<tr><td>${shift}</td>`;
-                    days.forEach(day => {
-                        let worker = result.assignments[`${day} ${shift}`] || '';
-                        if (worker) {
-                            assignmentsTable += `<td class="assignment-cell"><span class="${worker.toLowerCase()}">${worker}</span></td>`;
-                        } else {
-                            assignmentsTable += `<td class="assignment-cell"></td>`;
-                        }
-                    });
-                    assignmentsTable += '</tr>';
-                });
-                assignmentsTable += '</tbody></table>';
-
-                document.getElementById('assignments').innerHTML = assignmentsTable;
-                document.getElementById('score').innerText = 'Score: ' + result.score;
-            }
-        }
+        document.getElementById('assignments').innerHTML = assignmentsTable;
+        document.getElementById('score').innerText = 'Score: ' + result.score;
+    }
+}
     </script>
 </head>
 <body>

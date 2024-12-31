@@ -2,3 +2,5 @@
 *.xlsx
 .pytest_cache
 Shift_assigner_v1_video.mp4
+*.pyc
+.vscode/
