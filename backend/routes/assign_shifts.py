@@ -43,7 +43,8 @@ def assign_shifts(db: Session = Depends(get_db)):
     # Save to the database
     db_record = Assignment(
         assignments=assignment_data_serialized,  # Use the serialized dictionary
-        grade=score  # Use the score
+        grade=score,  # Use the score
+        SaturdayNight=assignment_data_serialized.get("Saturday 23:00-07:00")  # Extract the Saturday night worker
     )
     db.add(db_record)
     db.commit()
