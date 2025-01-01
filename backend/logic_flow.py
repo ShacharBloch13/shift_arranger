@@ -1,4 +1,5 @@
 import random
+from db import SessionLocal, get_saturday_night_worker
 
 # Define the constraints
 MAX_NIGHT_SHIFTS = 1
@@ -102,6 +103,10 @@ def all_workers_submitted():
 
 
 def generate_valid_assignment():
+    db = SessionLocal()
+    saturnight = get_saturday_night_worker(db)
+    db.close()
+
     individual = {}
     night_shift_count = {worker: 0 for worker in required_workers}
 
@@ -116,6 +121,13 @@ def generate_valid_assignment():
             if shift == '23:00-07:00':
                 previous_shift = '15:00-23:00'
             available_workers = [worker for worker in required_workers if worker_availability[worker][day][shift]]
+
+            if day == "Sunday" and shift == "07:00-15:00" and saturnight in available_workers:
+                available_workers.remove(saturnight)
+                if available_workers is None:
+                    print("Cant have the same worker on Saturday night and Sunday morning.")
+
+
             if shift == '23:00-07:00':
                 available_workers = [worker for worker in available_workers if night_shift_count[worker] < MAX_NIGHT_SHIFTS]
 
