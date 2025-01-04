@@ -6,6 +6,8 @@
     <title>Shift Availability</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script>
+let currentAssignment = null; // Store the current assignment globally
+
 async function submitAvailability() {
     let availabilities = [];
     document.querySelectorAll('.availability').forEach((checkbox) => {
@@ -38,6 +40,7 @@ async function getAssignments() {
     if (result.error) {
         alert(result.error);
     } else {
+        currentAssignment = result; // Store the fetched assignment and score
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
 
@@ -63,6 +66,33 @@ async function getAssignments() {
 
         document.getElementById('assignments').innerHTML = assignmentsTable;
         document.getElementById('score').innerText = 'Score: ' + result.score;
+        document.getElementById('acceptButton').style.display = 'block'; // Show the accept button
+    }
+}
+
+async function acceptAssignment() {
+    if (!currentAssignment) {
+        alert("No assignment to accept.");
+        return;
+    }
+
+    let response = await fetch('/assignments/accept', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(currentAssignment)
+    });
+
+    let result = await response.json();
+    if (result.success) {
+        alert("Assignment accepted and saved!");
+        document.getElementById('assignments').innerHTML = ''; // Clear the assignment
+        document.getElementById('score').innerText = '';
+        document.getElementById('acceptButton').style.display = 'none'; // Hide the accept button
+        currentAssignment = null; // Reset the assignment
+    } else {
+        alert("Error: " + result.error);
     }
 }
     </script>
@@ -95,6 +125,8 @@ async function getAssignments() {
         <button type="submit">Submit Availability</button>
     </form>
     <button onclick="getAssignments()">Get Assignments</button>
+    <button id="acceptButton" onclick="acceptAssignment()" style="display:none;">Accept Assignment</button>
+
     <h2>Assignments</h2>
     <div id="assignments"></div>
     <p id="score"></p>
