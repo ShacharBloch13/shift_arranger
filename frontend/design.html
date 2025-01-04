@@ -6,96 +6,124 @@
     <title>Shift Availability</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script>
-let currentAssignment = null; // Store the current assignment globally
-
-async function submitAvailability() {
-    let availabilities = [];
-    document.querySelectorAll('.availability').forEach((checkbox) => {
-        let [worker, day, shift] = checkbox.id.split('_');
-        availabilities.push({
-            worker: worker,
-            day: day,
-            shift: shift,
-            available: checkbox.checked
-        });
-    });
-    let response = await fetch('/availability', { 
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(availabilities)
-    });
-    let result = await response.json();
-    if (result.error) {
-        alert(result.error);
-    } else {
-        alert(result.status);
-    }
-}
-
-async function getAssignments() {
-    let response = await fetch('/assignments');
-    let result = await response.json();
-    if (result.error) {
-        alert(result.error);
-    } else {
-        currentAssignment = result; // Store the fetched assignment and score
-        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
-
-        let assignmentsTable = '<table border="1"><thead><tr><th>Shift/Day</th>';
-        days.forEach(day => {
-            assignmentsTable += `<th>${day}</th>`;
-        });
-        assignmentsTable += '</tr></thead><tbody>';
-
-        shifts.forEach(shift => {
-            assignmentsTable += `<tr><td>${shift}</td>`;
-            days.forEach(day => {
-                let worker = result.assignments[`${day} ${shift}`] || '';
-                if (worker) {
-                    assignmentsTable += `<td class="assignment-cell"><span class="${worker.toLowerCase()}">${worker}</span></td>`;
-                } else {
-                    assignmentsTable += `<td class="assignment-cell"></td>`;
-                }
+        let currentAssignmentIndex = 0;
+        let assignmentsList = [];
+        let currentAssignment = null; // Store the current assignment globally
+        
+        async function submitAvailability() {
+            let availabilities = [];
+            document.querySelectorAll('.availability').forEach((checkbox) => {
+                let [worker, day, shift] = checkbox.id.split('_');
+                availabilities.push({
+                    worker: worker,
+                    day: day,
+                    shift: shift,
+                    available: checkbox.checked
+                });
             });
-            assignmentsTable += '</tr>';
-        });
-        assignmentsTable += '</tbody></table>';
-
-        document.getElementById('assignments').innerHTML = assignmentsTable;
-        document.getElementById('score').innerText = 'Score: ' + result.score;
-        document.getElementById('acceptButton').style.display = 'block'; // Show the accept button
-    }
-}
-
-async function acceptAssignment() {
-    if (!currentAssignment) {
-        alert("No assignment to accept.");
-        return;
-    }
-
-    let response = await fetch('/assignments/accept', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(currentAssignment)
-    });
-
-    let result = await response.json();
-    if (result.success) {
-        alert("Assignment accepted and saved!");
-        document.getElementById('assignments').innerHTML = ''; // Clear the assignment
-        document.getElementById('score').innerText = '';
-        document.getElementById('acceptButton').style.display = 'none'; // Hide the accept button
-        currentAssignment = null; // Reset the assignment
-    } else {
-        alert("Error: " + result.error);
-    }
-}
-    </script>
+            let response = await fetch('/availability', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(availabilities)
+            });
+            let result = await response.json();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                alert(result.status);
+            }
+        }
+        
+        async function getAssignments() {
+            let response = await fetch('/assignments');
+            let result = await response.json();
+            if (result.error) {
+                alert(result.error);
+            } else {
+                assignmentsList = result.assignments_list; // Store the list of assignments
+                currentAssignmentIndex = 0; // Reset index to the first assignment
+                currentAssignment = assignmentsList[currentAssignmentIndex]; // Set the initial current assignment
+                displayAssignment(currentAssignment); // Display the first assignment
+                document.getElementById('acceptButton').style.display = 'block'; // Show accept button
+                document.getElementById('retryButton').style.display = 'block'; // Show retry button
+            }
+        }
+        
+        function displayAssignment(assignment) {
+            console.log("Displaying assignment:", assignment); // Debugging log
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const shifts = ["07:00-15:00", "15:00-23:00", "23:00-07:00"];
+        
+            let assignmentsTable = '<table border="1"><thead><tr><th>Shift/Day</th>';
+            days.forEach(day => {
+                assignmentsTable += `<th>${day}</th>`;
+            });
+            assignmentsTable += '</tr></thead><tbody>';
+        
+            shifts.forEach(shift => {
+                assignmentsTable += `<tr><td>${shift}</td>`;
+                days.forEach(day => {
+                    let worker = assignment.assignments[`${day} ${shift}`] || '';
+                    if (worker) {
+                        assignmentsTable += `<td class="assignment-cell"><span class="${worker.toLowerCase()}">${worker}</span></td>`;
+                    } else {
+                        assignmentsTable += `<td class="assignment-cell"></td>`;
+                    }
+                });
+                assignmentsTable += '</tr>';
+            });
+            assignmentsTable += '</tbody></table>';
+        
+            document.getElementById('assignments').innerHTML = assignmentsTable;
+            document.getElementById('score').innerText = 'Score: ' + assignment.score;
+        }
+        
+        async function retryAssignment() {
+            currentAssignmentIndex++; // Move to the next assignment
+            if (currentAssignmentIndex < assignmentsList.length) {
+                currentAssignment = assignmentsList[currentAssignmentIndex]; // Update currentAssignment to the next one
+                console.log("Retrying with assignment:", currentAssignment); // Debugging log
+                displayAssignment(currentAssignment); // Display the next best assignment
+            } else {
+                // If no more assignments are available, regenerate new assignments
+                alert("No more alternate assignments. Generating new assignments...");
+                await getAssignments(); // Fetch a new list of assignments
+            }
+        }
+        
+        async function acceptAssignment() {
+            if (!currentAssignment) {
+                alert("No assignment to accept.");
+                return;
+            }
+        
+            console.log("Accepting assignment:", assignmentsList[currentAssignmentIndex]); // Debugging log before sending
+        
+            let response = await fetch('/assignments/accept', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(assignmentsList[currentAssignmentIndex])
+            });
+        
+            let result = await response.json();
+            if (result.success) {
+                alert("Assignment accepted and saved!");
+                document.getElementById('assignments').innerHTML = ''; // Clear the assignment
+                document.getElementById('score').innerText = '';
+                document.getElementById('acceptButton').style.display = 'none'; // Hide accept button
+                document.getElementById('retryButton').style.display = 'none'; // Hide retry button
+                currentAssignment = null; // Reset the assignment
+                assignmentsList = []; // Clear the list of assignments
+            } else {
+                alert("Error: " + result.error);
+            }
+        }
+        </script>        
+        
 </head>
 <body>
     <h1>Shift Availability</h1>
@@ -126,6 +154,7 @@ async function acceptAssignment() {
     </form>
     <button onclick="getAssignments()">Get Assignments</button>
     <button id="acceptButton" onclick="acceptAssignment()" style="display:none;">Accept Assignment</button>
+    <button id="retryButton" onclick="retryAssignment()" style="display:none;">Retry</button>
 
     <h2>Assignments</h2>
     <div id="assignments"></div>
