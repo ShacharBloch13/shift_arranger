@@ -22,7 +22,7 @@ async def accept_assignment(assignment: AcceptedAssignment, db: Session = Depend
         # Create a new assignment record
         new_assignment = Assignment(
             assignments=assignment.assignments,
-            grade=100,  # Assuming a perfect grade
+            grade=assignment.score,
             SaturdayNight=assignment.assignments.get("Saturday 23:00-07:00")
         )
         db.add(new_assignment)

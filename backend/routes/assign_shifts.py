@@ -29,16 +29,19 @@ def assign_shifts(db: Session = Depends(get_db)):
         return {"error": "No valid assignments found."}
 
     # Extract the best assignment and its score
-    best_assignment = max(assignments, key=lambda x: x[0])
-    score = best_assignment[0]
-    assignment_data = best_assignment[1]
+    sorted_assignments = sorted(assignments, key=lambda x: x[0], reverse=True)
+
 
     # Convert tuple keys to strings for JSON compatibility
-    assignment_data_serialized = {
-        f"{day} {shift}": worker for (day, shift), worker in assignment_data.items()
-    }
+    serialized_assignments = [
+        {
+            "score": score,
+            "assignments": {f"{day} {shift}": worker for (day, shift), worker in assignment.items()}
+        }
+        for score, assignment in sorted_assignments
+    ]
 
-    print("Serialized Assignment Data:", assignment_data_serialized)  # Debugging
+    print("Serialized Assignment Data:", serialized_assignments)  # Debugging
 
     # Save to the database
     # db_record = Assignment(
@@ -50,7 +53,4 @@ def assign_shifts(db: Session = Depends(get_db)):
     # db.commit()
     # db.refresh(db_record)
 
-    return {
-        "assignments": assignment_data_serialized,
-        "score": score,
-    }
+    return {"assignments_list": serialized_assignments}
