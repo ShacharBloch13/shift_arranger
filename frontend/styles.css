@@ -53,3 +53,10 @@ input[type="checkbox"]:checked {
     color: black;
     background-color: white;
 }
+
+#loading {
+    font-size: 20px;
+    color: white;
+    text-align: center;
+    margin: 20px 0;
+}
