@@ -37,19 +37,31 @@
         }
         
         async function getAssignments() {
-            let response = await fetch('/assignments');
-            let result = await response.json();
-            if (result.error) {
-                alert(result.error);
-            } else {
-                assignmentsList = result.assignments_list; // Store the list of assignments
-                currentAssignmentIndex = 0; // Reset index to the first assignment
-                currentAssignment = assignmentsList[currentAssignmentIndex]; // Set the initial current assignment
-                displayAssignment(currentAssignment); // Display the first assignment
-                document.getElementById('acceptButton').style.display = 'block'; // Show accept button
-                document.getElementById('retryButton').style.display = 'block'; // Show retry button
+            document.getElementById('loading').style.display = 'block'; // Show loading
+            document.getElementById('assignments').innerHTML = ''; // Clear previous assignments
+            document.getElementById('score').innerText = '';
+
+            try {
+                let response = await fetch('/assignments');
+                let result = await response.json();
+
+                if (result.error) {
+                    alert(result.error);
+                } else {
+                    assignmentsList = result.assignments_list;
+                    currentAssignmentIndex = 0;
+                    currentAssignment = assignmentsList[currentAssignmentIndex];
+                    displayAssignment(currentAssignment);
+                    document.getElementById('acceptButton').style.display = 'block';
+                    document.getElementById('retryButton').style.display = 'block';
+                }
+            } catch (error) {
+                alert("Error fetching assignments: " + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none'; // Hide loading
             }
         }
+
         
         function displayAssignment(assignment) {
             console.log("Displaying assignment:", assignment); // Debugging log
@@ -155,6 +167,8 @@
     <button onclick="getAssignments()">Get Assignments</button>
     <button id="acceptButton" onclick="acceptAssignment()" style="display:none;">Accept Assignment</button>
     <button id="retryButton" onclick="retryAssignment()" style="display:none;">Retry</button>
+    <div id="loading" style="display:none;">Loading...</div>
+
 
     <h2>Assignments</h2>
     <div id="assignments"></div>
