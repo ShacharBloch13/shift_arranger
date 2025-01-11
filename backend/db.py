@@ -15,11 +15,12 @@ Base = declarative_base()
 class Assignment(Base):
     __tablename__ = "assignments"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(VARCHAR, primary_key=True)
     assignments = Column(JSON, nullable=False)
     grade = Column(Integer, nullable=False)
     date = Column(DateTime, default=func.now())
     SaturdayNight = Column(VARCHAR, nullable=False)
+    manager= Column(VARCHAR, nullable=False)
 
 # Initialize the database
 Base.metadata.create_all(bind=engine)

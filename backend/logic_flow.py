@@ -1,6 +1,8 @@
 import random
 from db import SessionLocal, get_saturday_night_worker
 
+manager = "Arazi" #temporary
+
 # Define the constraints
 MAX_NIGHT_SHIFTS = 1
 MIN_SHIFTS = 2
